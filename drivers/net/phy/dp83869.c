@@ -21,6 +21,7 @@
 #define MII_DP83869_PHYCTRL	0x10
 #define MII_DP83869_MICR	0x12
 #define MII_DP83869_ISR		0x13
+#define DP83869_FX_INT_STTS 0xc19
 #define DP83869_CFG2		0x14
 #define DP83869_CTRL		0x1f
 #define DP83869_CFG4		0x1e
@@ -178,6 +179,13 @@ static int dp83869_ack_interrupt(struct phy_device *phydev)
 {
 	int err = phy_read(phydev, MII_DP83869_ISR);
 
+	if (err < 0)
+		return err;
+	/*
+	* To be sure we have cleared all pending interrupts.
+	* See Section 9.3.6 Interrupt of the DP83869 datasheet.
+	*/
+	err = phy_read_mmd(phydev, DP83869_DEVADDR, DP83869_FX_INT_STTS);
 	if (err < 0)
 		return err;
 
